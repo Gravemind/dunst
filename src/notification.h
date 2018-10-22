@@ -74,6 +74,7 @@ struct notification {
         bool transient;     /**< timeout albeit user is idle */
         int progress;       /**< percentage (-1: undefined) */
         int history_ignore; /**< push to history or free directly */
+        char *synchronous;  /**< replace notification by name (x-canonical-private-synchronous hint) */
 
         /* internal */
         bool redisplayed;       /**< has been displayed before? */

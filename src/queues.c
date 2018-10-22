@@ -123,6 +123,7 @@ static bool queues_notification_is_ready(const struct notification *n, bool full
 /* see queues.h */
 int queues_notification_insert(struct notification *n)
 {
+        bool inserted = false;
 
         /* do not display the message, if the message is empty */
         if (STR_EMPTY(n->msg)) {
@@ -146,14 +147,17 @@ int queues_notification_insert(struct notification *n)
                 return 0;
         }
 
-        if (n->id == 0) {
+        if (!inserted && n->id != 0 && queues_notification_replace_id(n))
+                inserted = true;
+        else
                 n->id = ++next_notification_id;
-                if (!settings.stack_duplicates || !queues_stack_duplicate(n))
-                        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
-        } else {
-                if (!queues_notification_replace_id(n))
-                        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
-        }
+
+        if (!inserted && STR_FULL(n->synchronous) && queues_notification_replace_synchronous(n))
+                inserted = true;
+        if (!inserted && settings.stack_duplicates && queues_stack_duplicate(n))
+                inserted = true;
+        if (!inserted)
+                g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 
         if (settings.print_notifications)
                 notification_print(n);
@@ -188,7 +192,7 @@ static bool queues_stack_duplicate(struct notification *n)
                                 n->dup_count = orig->dup_count;
                                 signal_notification_closed(orig, 1);
 
-                                if ( allqueues[i] == displayed )
+                                if (allqueues[i] == displayed)
                                         n->start = time_monotonic_now();
 
                                 notification_unref(orig);
@@ -204,7 +208,7 @@ static bool queues_stack_duplicate(struct notification *n)
 bool queues_notification_replace_id(struct notification *new)
 {
         GQueue *allqueues[] = { displayed, waiting };
-        for (int i = 0; i < sizeof(allqueues)/sizeof(GList*); i++) {
+        for (int i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
                 for (GList *iter = g_queue_peek_head_link(allqueues[i]);
                             iter;
                             iter = iter->next) {
@@ -213,7 +217,35 @@ bool queues_notification_replace_id(struct notification *new)
                                 iter->data = new;
                                 new->dup_count = old->dup_count;
 
-                                if ( allqueues[i] == displayed ) {
+                                if (allqueues[i] == displayed) {
+                                        new->start = time_monotonic_now();
+                                        notification_run_script(new);
+                                }
+
+                                notification_unref(old);
+                                return true;
+                        }
+                }
+        }
+        return false;
+}
+
+/* see queues.h */
+bool queues_notification_replace_synchronous(struct notification *new)
+{
+        GQueue *allqueues[] = { displayed, waiting };
+        for (int i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]);
+                            iter;
+                            iter = iter->next) {
+                        struct notification *old = iter->data;
+                        if (STR_FULL(old->synchronous) && STR_EQ(old->synchronous, new->synchronous)) {
+                                iter->data = new;
+                                new->dup_count = old->dup_count;
+
+                                signal_notification_closed(old, 1);
+
+                                if (allqueues[i] == displayed) {
                                         new->start = time_monotonic_now();
                                         notification_run_script(new);
                                 }

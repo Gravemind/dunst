@@ -78,6 +78,19 @@ int queues_notification_insert(struct notification *n);
 bool queues_notification_replace_id(struct notification *new);
 
 /**
+ * Replace the notification which matches the synchronous field (as in the
+ * "x-canonical-private-synchronous" capability) of the new notification. The
+ * given notification is inserted right in the same position as the old
+ * notification.
+ *
+ * @param new replacement for the old notification
+ *
+ * @return true, if a matching notification has been found and is replaced
+ * @return false, else
+ */
+bool queues_notification_replace_synchronous(struct notification *new);
+
+/**
  * Close the notification that has n->id == id
  *
  * Sends a signal and pushes the selected notification automatically to history.
