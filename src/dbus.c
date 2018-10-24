@@ -119,7 +119,9 @@ static void on_get_capabilities(GDBusConnection *connection,
         g_variant_builder_add(builder, "s", "actions");
         g_variant_builder_add(builder, "s", "body");
         g_variant_builder_add(builder, "s", "body-hyperlinks");
-        g_variant_builder_add(builder, "s", "x-canonical-private-synchronous");
+
+        if (STR_FULL(settings.synchronous_hint))
+                g_variant_builder_add(builder, "s", settings.synchronous_hint);
 
         if (settings.markup != MARKUP_NO)
                 g_variant_builder_add(builder, "s", "body-markup");
@@ -247,10 +249,13 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                                                 g_variant_unref(dict_value);
                                         }
 
-                                        dict_value = g_variant_lookup_value(content, "x-canonical-private-synchronous", G_VARIANT_TYPE_STRING);
-                                        if (dict_value) {
-                                                n->synchronous = g_variant_dup_string(dict_value, NULL);
-                                                g_variant_unref(dict_value);
+                                        if (STR_FULL(settings.synchronous_hint))
+                                        {
+                                                dict_value = g_variant_lookup_value(content, settings.synchronous_hint, G_VARIANT_TYPE_STRING);
+                                                if (dict_value) {
+                                                        n->synchronous = g_variant_dup_string(dict_value, NULL);
+                                                        g_variant_unref(dict_value);
+                                                }
                                         }
 
                                 }

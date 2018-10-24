@@ -90,6 +90,7 @@ struct settings {
         enum mouse_action mouse_left_click;
         enum mouse_action mouse_middle_click;
         enum mouse_action mouse_right_click;
+        char *synchronous_hint;
 };
 
 extern struct settings settings;

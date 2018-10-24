@@ -108,6 +108,8 @@ struct settings defaults = {
 
 .mouse_right_click = MOUSE_CLOSE_ALL,
 
+.synchronous_hint = ""
+
 };
 
 struct rule default_rules[] = {

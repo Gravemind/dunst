@@ -496,6 +496,21 @@ Close all notifications.
 
 =back
 
+=item B<synchronous_hint> (default: "")
+
+Defines the name of the hint used as the synchronous value: a notification
+arriving with this synchronous hint will replace any existing notification with
+the same synchronous hint value. Also, a notification server capability of the
+same name will be emitted.
+
+Notifier usage example for 'synchronous_hint = "synchronous"':
+    $ notify-send -h int:transient:1 -h string:synchronous:volume -h int:value:10 Volume
+
+B<NOTE>: This is not a standard Desktop Notifications Specification feature:
+Unity's notify-osd uses "x-canonical-private-synchronous". Gnome's
+notification-daemon doesn't seem to implement a synchronous hint. Some notifiers
+will use "synchronous" as hint name (eg pulseaudio-ctl).
+
 =back
 
 =head2 Shortcut section

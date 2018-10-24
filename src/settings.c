@@ -620,6 +620,12 @@ void load_settings(char *cmdline_config_path)
                 g_free(c);
         }
 
+        settings.synchronous_hint = option_get_string(
+                "global",
+                "synchronous_hint", "-synchronous_hint", defaults.synchronous_hint,
+                "Define the name of the (non-standard) hint used as the synchronous value"
+        );
+
         settings.lowbgcolor = option_get_string(
                 "urgency_low",
                 "background", "-lb", defaults.lowbgcolor,

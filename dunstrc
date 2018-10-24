@@ -214,6 +214,10 @@
     # notification height to avoid clipping text and/or icons.
     corner_radius = 0
 
+    # Define the name of the (non-standard) hint used as the synchronous value:
+    # see 'man dunst' for more details.
+    synchronous_hint = "synchronous"
+
     ### Legacy
 
     # Use the Xinerama extension instead of RandR for multi-monitor support.
